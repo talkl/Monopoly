@@ -108,7 +108,7 @@ Monopoly.handleTurn = function(){
         Monopoly.setNextPlayerTurn();
     }
 }
-
+//setting the next player turn
 Monopoly.setNextPlayerTurn = function(){
     var currentPlayerTurn = Monopoly.getCurrentPlayer();
     var playerId = parseInt(currentPlayerTurn.attr("id").replace("player",""));
@@ -194,11 +194,24 @@ Monopoly.handleChanceCard = function(player){
     });
     Monopoly.showPopup("chance");
 };
-
+//community card handle
 Monopoly.handleCommunityCard = function(player){
-    //TODO: implement this method
-    alert("not implemented yet!")
-    Monopoly.setNextPlayerTurn();
+    var popup = Monopoly.getPopup("community");
+    popup.find(".popup-content").addClass("loading-state");
+    $.get("https://itcmonopoly.appspot.com/get_random_community_card", function (json) {
+        popup.find(".popup-content #text-placeholder").text(json["content"]);
+        popup.find(".popup-title").text(json["title"]);
+        popup.find(".popup-content").removeClass("loading-state");
+        popup.find(".popup-content button").attr("data-action", json["action"]).attr("data-amount", json["amount"]);
+    }, "json");
+    popup.find("button").unbind("click").bind("click", function () {
+        var currentBtn = $(this);
+        var action = currentBtn.attr("data-action");
+        var amount = currentBtn.attr("data-amount");
+        console.log("testing the action and amount " + action + " " + amount)
+        Monopoly.handleAction(player, action, amount);
+    });
+    Monopoly.showPopup("community");
 };
 
 //sending to jail. putting the player inside the in-jail cell
@@ -279,6 +292,9 @@ Monopoly.handleAction = function(player,action,amount){
             Monopoly.setNextPlayerTurn();
             break;
         case "jail":
+            if(Number.isInteger(amount)) {
+                Monopoly.updatePlayersMoney(player, amount);
+            }
             Monopoly.sendToJail(player);
             break;
     };
