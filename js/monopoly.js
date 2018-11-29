@@ -1,6 +1,6 @@
 var Monopoly = {};
 Monopoly.allowRoll = true;
-Monopoly.moneyAtStart = 1000;
+Monopoly.moneyAtStart = 100;
 Monopoly.doubleCounter = 0;
 
 Monopoly.init = function(){
@@ -201,7 +201,7 @@ Monopoly.handleCommunityCard = function(player){
     Monopoly.setNextPlayerTurn();
 };
 
-
+//sending to jail. putting the player inside the in-jail cell
 Monopoly.sendToJail = function(player){
     player.addClass("jailed");
     player.attr("data-jail-time",1);
@@ -211,11 +211,11 @@ Monopoly.sendToJail = function(player){
     Monopoly.closePopup();
 };
 
-
+//getting the popup id
 Monopoly.getPopup = function(popupId){
     return $(".popup-lightbox .popup-page#" + popupId);
 };
-
+//calculating the property cost as a function of the cell group. the bigger the group, the bigger the price will be
 Monopoly.calculateProperyCost = function(propertyCell){
     var cellGroup = propertyCell.attr("data-group");
     var cellPrice = parseInt(cellGroup.replace("group","")) * 5;
@@ -225,7 +225,7 @@ Monopoly.calculateProperyCost = function(propertyCell){
     return cellPrice;
 };
 
-
+//calculating the property rent with corelation of the property's cost
 Monopoly.calculateProperyRent = function(propertyCost){
     return propertyCost/2;
 };
@@ -235,7 +235,7 @@ Monopoly.closeAndNextTurn = function(){
     Monopoly.setNextPlayerTurn();
     Monopoly.closePopup();
 };
-
+//adding event listener on the first pop up and validating the number of players
 Monopoly.initPopups = function(){
     $(".popup-page#intro").find("button").click(function(){
         var numOfPlayers = $(this).closest(".popup-page").find("input").val();
@@ -246,27 +246,27 @@ Monopoly.initPopups = function(){
     });
 };
 
-
+//if a player has money then the tile becomes the player's property
 Monopoly.handleBuy = function(player,propertyCell,propertyCost){
     var playersMoney = Monopoly.getPlayersMoney(player)
     if (playersMoney < propertyCost){
         Monopoly.showErrorMsg();
     }else{
-        Monopoly.updatePlayersMoney(player,propertyCost);
         var rent = Monopoly.calculateProperyRent(propertyCost);
 
         propertyCell.removeClass("available")
                     .addClass(player.attr("id"))
                     .attr("data-owner",player.attr("id"))
                     .attr("data-rent",rent);
-        Monopoly.setNextPlayerTurn();
+
+        Monopoly.handleAction(player, 'pay', propertyCost);
     }
 };
 
 
 
 
-
+//handling different actions in one place
 Monopoly.handleAction = function(player,action,amount){
     console.log(action)
     switch(action){
@@ -288,10 +288,10 @@ Monopoly.handleAction = function(player,action,amount){
 
 
 
-
+//creating the players and putting them in the go tile position - if input is float, the fractional part is dismissed
 Monopoly.createPlayers = function(numOfPlayers){
     var startCell = $(".go");
-    for (var i=1; i<= numOfPlayers; i++){
+    for (var i=1; i<= Number.parseInt(numOfPlayers); i++){
         var player = $("<div />").addClass("player shadowed").attr("id","player" + i).attr("title","player" + i + ": $" + Monopoly.moneyAtStart);
         startCell.find(".content").append(player);
         if (i==1){
@@ -301,7 +301,7 @@ Monopoly.createPlayers = function(numOfPlayers){
     }
 };
 
-
+//getting the next cell id and returning it
 Monopoly.getNextCell = function(cell){
     var currentCellId = parseInt(cell.attr("id").replace("cell",""));
     var nextCellId = currentCellId + 1
@@ -313,13 +313,13 @@ Monopoly.getNextCell = function(cell){
     return $(".cell#cell" + nextCellId);
 };
 
-
+//each full circle the player should be awarded with 10th of the games start money - fixed to add the amount
 Monopoly.handlePassedGo = function(){
     var player = Monopoly.getCurrentPlayer();
-    Monopoly.updatePlayersMoney(player,Monopoly.moneyAtStart/10);
+    Monopoly.updatePlayersMoney(player,-1 * Monopoly.moneyAtStart/10);
 };
 
-
+//validation of the players number input
 Monopoly.isValidInput = function(validate,value){
     var isValid = false;
     switch(validate){
@@ -338,7 +338,7 @@ Monopoly.isValidInput = function(validate,value){
     return isValid;
 
 }
-
+//pops up contextual error depends on the error, using the .invalid-error of the .popup-page
 Monopoly.showErrorMsg = function(){
     $(".popup-page .invalid-error").fadeTo(500,1);
     setTimeout(function(){
@@ -346,23 +346,23 @@ Monopoly.showErrorMsg = function(){
     },2000);
 };
 
-
+//adjusting the board size according to the actual window width/height (minimum of the two)
 Monopoly.adjustBoardSize = function(){
     var gameBoard = $(".board");
     var boardSize = Math.min($(window).height(),$(window).width());
     boardSize -= parseInt(gameBoard.css("margin-top")) *2;
     $(".board").css({"height":boardSize,"width":boardSize});
 }
-
+//closing the popup-lightbox parent of all the errors. just a quick way to close whatever error
 Monopoly.closePopup = function(){
     $(".popup-lightbox").fadeOut();
 };
-
+//play the sound according to the context. taken from the 'sounds' folder in the game's path
 Monopoly.playSound = function(sound){
     var snd = new Audio("./sounds/" + sound + ".wav"); 
     snd.play();
 }
-
+//hide the current popup child, show the popup passed to the function and show the parent lightbox
 Monopoly.showPopup = function(popupId){
     $(".popup-lightbox .popup-page").hide();
     $(".popup-lightbox .popup-page#" + popupId).show();
