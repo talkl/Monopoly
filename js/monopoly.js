@@ -162,7 +162,6 @@ Monopoly.handlePayRent = function(player,propertyCell){
     popup.find("#amount-placeholder").text(currentRent);
     popup.find("button").unbind("click").bind("click",function(){
         var properyOwner = $(".player#"+ properyOwnerId);
-        console.log(properyOwnerId)
         Monopoly.updatePlayersMoney(player,currentRent);
         Monopoly.updatePlayersMoney(properyOwner,-1*currentRent);
         Monopoly.closeAndNextTurn();
@@ -193,7 +192,7 @@ Monopoly.handleChanceCard = function(player){
         var currentBtn = $(this);
         var action = currentBtn.attr("data-action");
         var amount = currentBtn.attr("data-amount");
-        console.log("testing the action and amount " + action + " " + amount)
+        
         Monopoly.handleAction(player,action,amount);
     });
     Monopoly.showPopup("chance");
@@ -212,7 +211,7 @@ Monopoly.handleCommunityCard = function(player){
         var currentBtn = $(this);
         var action = currentBtn.attr("data-action");
         var amount = currentBtn.attr("data-amount");
-        console.log("testing the action and amount " + action + " " + amount)
+        
         Monopoly.handleAction(player, action, amount);
     });
     Monopoly.showPopup("community");
@@ -285,10 +284,8 @@ Monopoly.handleBuy = function(player,propertyCell,propertyCost){
 
 //handling different actions in one place
 Monopoly.handleAction = function(player,action,amount){
-    console.log(action)
     switch(action){
         case "move":
-       	    console.log(amount)
             Monopoly.movePlayer(player,amount);
              break;
         case "pay":
@@ -326,7 +323,6 @@ Monopoly.getNextCell = function(cell){
     var currentCellId = parseInt(cell.attr("id").replace("cell",""));
     var nextCellId = currentCellId + 1
     if (nextCellId > 40){
-        console.log("YAY")
         Monopoly.handlePassedGo();
         nextCellId = 1;
     }
@@ -348,8 +344,6 @@ Monopoly.isValidInput = function(validate,value){
                 isValid = true;
             }
             break;
-        default:
-            console.log("input should be numofplayers");
     }
 
     if (!isValid){
