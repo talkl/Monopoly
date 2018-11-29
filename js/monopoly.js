@@ -79,7 +79,11 @@ Monopoly.movePlayer = function(player,steps){
         }else{
             var playerCell = Monopoly.getPlayersCell(player);
             var nextCell = Monopoly.getNextCell(playerCell);
-            nextCell.find(".content").append(player);
+            if(nextCell.attr('id') === 'cell11') { //putting player in just a visit
+                nextCell.append(player);
+            } else{
+                nextCell.find(".content").append(player);    
+            }
             steps--;
         }
     },200);
@@ -218,7 +222,7 @@ Monopoly.handleCommunityCard = function(player){
 Monopoly.sendToJail = function(player){
     player.addClass("jailed");
     player.attr("data-jail-time",1);
-    $(".corner.game.cell.in-jail").append(player);
+    $(".corner.game.cell.in-jail .content").append(player);
     Monopoly.playSound("woopwoop");
     Monopoly.setNextPlayerTurn();
     Monopoly.closePopup();
