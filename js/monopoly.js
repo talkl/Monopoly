@@ -69,6 +69,9 @@ Monopoly.rollDice = function(){
 
 Monopoly.movePlayer = function(player,steps){
     Monopoly.allowRoll = false;
+    if (player.is('.owner')) {
+        player.removeClass('owner');
+    }
     var playerMovementInterval = setInterval(function(){
         if (steps == 0){
             clearInterval(playerMovementInterval);
@@ -89,8 +92,13 @@ Monopoly.handleTurn = function(){
     if (playerCell.is(".available.property")){
         Monopoly.handleBuyProperty(player,playerCell);
     }else if(playerCell.is(".property:not(.available)") && !playerCell.hasClass(player.attr("id"))){
-         Monopoly.handlePayRent(player,playerCell);
-    }else if(playerCell.is(".go-to-jail")){
+        Monopoly.handlePayRent(player,playerCell);
+    } //added case the player is  the owner of the property
+    else if (playerCell.is(".property:not(.available)") && playerCell.hasClass(player.attr("id"))) {
+        player.addClass('owner');
+        Monopoly.setNextPlayerTurn();
+    }
+    else if(playerCell.is(".go-to-jail")){
         Monopoly.handleGoToJail(player);
     }else if(playerCell.is(".chance")){
         Monopoly.handleChanceCard(player);

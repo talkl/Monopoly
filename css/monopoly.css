@@ -209,7 +209,11 @@ body{
     background-size: contain;
     background-position: center center;
 }
-
+.player.owner {
+    background-image: url(../images/owner.png);
+    background-size: contain;
+    background-position: center center;
+}
 .board .dice.cell{
     background-color:white;
 }
