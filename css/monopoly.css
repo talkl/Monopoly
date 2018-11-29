@@ -204,6 +204,11 @@ body{
     background-size:contain;
     background-position:center;
 }
+.player.jailed {
+    background-image: url(../images/prisoner.png);
+    background-size: contain;
+    background-position: center center;
+}
 
 .board .dice.cell{
     background-color:white;
