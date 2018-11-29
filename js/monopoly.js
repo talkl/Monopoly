@@ -44,7 +44,8 @@ Monopoly.updatePlayersMoney = function(player,amount){
     var playersMoney = parseInt(player.attr("data-money"));
     playersMoney -= amount;
     if (playersMoney < 0 ){
-        alert("you are broke!")
+        Monopoly.playSound('no-money');
+        alert("you are broke!");
     }
     player.attr("data-money",playersMoney);
     player.attr("title",player.attr("id") + ": $" + playersMoney);
