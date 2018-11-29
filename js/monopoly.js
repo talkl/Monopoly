@@ -327,10 +327,9 @@ Monopoly.isValidInput = function(validate,value){
             if(value > 1 && value <= 4){
                 isValid = true;
             }
-            //TODO: remove when done
-            console.log("the val " + value)
-            isValid = true;
             break;
+        default:
+            console.log("input should be numofplayers");
     }
 
     if (!isValid){
