@@ -88,6 +88,19 @@ Monopoly.updatePlayersMoney = function(player,amount){
                 .addClass('available');
                 Monopoly.closePopup();
                 Monopoly.allowRoll = true;
+                if ($('.player').length === 1) { //winning condition
+                    setTimeout(() => {
+                        var popup = Monopoly.getPopup("win");
+                        var winner = $('.player');
+                        popup.find(".popup-content #text-placeholder").text(`${winner.attr('id')} won the game. congratulations!`);
+                        popup.find(".popup-title").text('Game Over');
+                        popup.find("button").unbind("click").bind("click", function () {
+                            location.reload();
+                        });
+                        Monopoly.showPopup("win");
+                    }
+                    , 0);
+                }
             });
             Monopoly.showPopup("broke");
         }, 0);
