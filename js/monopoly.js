@@ -42,10 +42,17 @@ Monopoly.getPlayersMoney = function(player){
     return parseInt(player.attr("data-money"));
 };
 
+Monopoly.resetDoublesAndSpeeding = function() {
+    Monopoly.doubleCounter = 0;
+    Monopoly.userResponded = true;
+    Monopoly.speeding = 0;
+};
+
 Monopoly.updatePlayersMoney = function(player,amount){
     var playersMoney = parseInt(player.attr("data-money"));
     playersMoney -= amount;
     if (playersMoney < 0 ){
+        Monopoly.resetDoublesAndSpeeding();
         setTimeout( () => {
             Monopoly.playSound('no-money');
             var popup = Monopoly.getPopup("broke");
@@ -61,6 +68,7 @@ Monopoly.updatePlayersMoney = function(player,amount){
                 .removeClass(player.attr("id"))
                 .addClass('available');
                 Monopoly.closePopup();
+                Monopoly.allowRoll = true;
             });
             Monopoly.showPopup("broke");
         }, 0);
@@ -71,7 +79,6 @@ Monopoly.updatePlayersMoney = function(player,amount){
     }
 };
 
-
 Monopoly.rollDice = function(){
     var result1 = Math.floor(Math.random() * 6) + 1 ;
     var result2 = Math.floor(Math.random() * 6) + 1 ;
@@ -80,6 +87,7 @@ Monopoly.rollDice = function(){
     $(".dice#dice2").attr("data-num",result2).find(".dice-dot.num" + result2).css("opacity",1);
     if (result1 == result2){
         if(++Monopoly.speeding >= 3) {
+            Monopoly.resetDoublesAndSpeeding();
             var currentPlayer = Monopoly.getCurrentPlayer();
             while (currentPlayer.length === 0) {
                 Monopoly.setNextPlayerTurn();
@@ -137,7 +145,7 @@ Monopoly.movePlayer = function(player,steps){
             }
             steps--;
         }
-    }, 200);
+    }, 1);
 };
 
 
@@ -296,6 +304,7 @@ Monopoly.handleCommunityCard = function(player){
 
 //sending to jail. putting the player inside the in-jail cell
 Monopoly.sendToJail = function(player){
+    Monopoly.resetDoublesAndSpeeding();
     player.addClass("jailed");
     player.attr("data-jail-time",1);
     $(".corner.game.cell.in-jail .content").append(player);
@@ -415,7 +424,7 @@ Monopoly.isValidInput = function(validate,value){
     var isValid = false;
     switch(validate){
         case "numofplayers":
-            if(value > 1 && value <= 4){
+            if(value >=2 && value <= 6){
                 isValid = true;
             }
             break;
