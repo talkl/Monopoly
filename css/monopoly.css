@@ -183,25 +183,25 @@ body{
     width: 25%;
 }
 
-.player#player1 , .player1.cell .content {
+.player#player1 , .player1.cell .content, #wallet tbody tr#entry-player1 {
     background-color: #389c36;
 }
 
-.player#player2 , .player2.cell .content{
+.player#player2 , .player2.cell .content, #wallet tbody tr#entry-player2{
     background-color: #364c9c;
 }
 
-.player#player3 , .player3.cell .content{
+.player#player3 , .player3.cell .content, #wallet tbody tr#entry-player3{
     background-color: #d09461;
 }
 
-.player#player4 , .player4.cell .content{
+.player#player4 , .player4.cell .content, #wallet tbody tr#entry-player4{
     background-color: #d061cd;
 }
-.player#player5 , .player5.cell .content{
+.player#player5 , .player5.cell .content, #wallet tbody tr#entry-player5{
     background-color: #fc0000;
 }
-.player#player6 , .player6.cell .content{
+.player#player6 , .player6.cell .content, #wallet tbody tr#entry-player6  {
     background-color: rgb(255, 255, 0);
 }
 

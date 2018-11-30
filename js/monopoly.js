@@ -4,12 +4,14 @@ Monopoly.moneyAtStart = 100;
 Monopoly.doubleCounter = 0;
 Monopoly.userResponded = true;
 Monopoly.speeding = 0;
+Monopoly.wallet = {};
 
 Monopoly.init = function(){
     $(document).ready(function(){
         Monopoly.adjustBoardSize();
         $(window).bind("resize",Monopoly.adjustBoardSize);
         Monopoly.initDice();
+        Monopoly.initWallet();
         Monopoly.initPopups();
         Monopoly.start();        
     });
@@ -27,6 +29,21 @@ Monopoly.initDice = function(){
         }
     });
 };
+Monopoly.initWallet = function() {
+    var wallet = $('<table/>')
+    .attr('id', 'wallet')
+    .css('height', '25%')
+    .css('border', '1px solid black')
+    .css('position', 'fixed')
+    .css('bottom', '0')
+    .css('background-color', 'white')
+    .append(`<thead>
+        <tr><th>player</th><th>amount</th></tr>
+        </thead>`)
+    .append(`<tbody>
+        </tbody>`);
+    $('body').prepend(wallet);
+};
 
 
 Monopoly.getCurrentPlayer = function(){
@@ -39,7 +56,7 @@ Monopoly.getPlayersCell = function(player){
 
 
 Monopoly.getPlayersMoney = function(player){
-    return parseInt(player.attr("data-money"));
+    return parseInt(Monopoly.wallet[`${player.attr('id')}`]);
 };
 
 Monopoly.resetDoublesAndSpeeding = function() {
@@ -49,7 +66,7 @@ Monopoly.resetDoublesAndSpeeding = function() {
 };
 
 Monopoly.updatePlayersMoney = function(player,amount){
-    var playersMoney = parseInt(player.attr("data-money"));
+    var playersMoney = parseInt(Monopoly.wallet[`${player.attr('id')}`]);
     playersMoney -= amount;
     if (playersMoney < 0 ){
         Monopoly.resetDoublesAndSpeeding();
@@ -60,6 +77,8 @@ Monopoly.updatePlayersMoney = function(player,amount){
             popup.find(".popup-title").text('Out Of Money');
             popup.find("button").unbind("click").bind("click", function () {
                 player.remove();
+                delete Monopoly.wallet[`${player.attr('id')}`];
+                $(`#wallet tbody tr#entry-${player.attr('id')}`).remove();
                 $(`.cell[data-owner='${player.attr('id')}']`)
                 .removeData('owner')
                 .removeData('rent')
@@ -73,8 +92,9 @@ Monopoly.updatePlayersMoney = function(player,amount){
             Monopoly.showPopup("broke");
         }, 0);
     } else {
-        player.attr("data-money",playersMoney);
-        player.attr("title",player.attr("id") + ": $" + playersMoney);
+        Monopoly.wallet[`${player.attr('id')}`] = playersMoney;
+        $(`#wallet tbody tr#entry-${player.attr('id')} td.player-name`).html(player.attr('id'));
+        $(`#wallet tbody tr#entry-${player.attr('id')} td.player-amount`).html(Monopoly.wallet[`${player.attr('id')}`].toString());
         Monopoly.playSound("chaching");
     }
 };
@@ -393,12 +413,14 @@ Monopoly.createPlayers = function(numOfPlayers){
     var startCell = $(".go");
     Monopoly.numOfPlayers = Number.parseInt(numOfPlayers);
     for (var i=1; i<= Number.parseInt(numOfPlayers); i++){
-        var player = $("<div />").addClass("player shadowed").attr("id","player" + i).attr("title","player" + i + ": $" + Monopoly.moneyAtStart);
+        var player = $("<div />").addClass("player shadowed").attr("id","player" + i);
         startCell.find(".content").append(player);
         if (i==1){
             player.addClass("current-turn");
         }
-        player.attr("data-money",Monopoly.moneyAtStart);
+        playerId = player.attr('id');
+        Monopoly.wallet[`${playerId}`] = Monopoly.moneyAtStart;
+        $('#wallet tbody').append(`<tr id="entry-${playerId}"><td class="player-name">${playerId}</td><td class="player-amount">${Monopoly.wallet[`${playerId}`]}<td/></tr>`);
     }
 };
 
