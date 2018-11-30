@@ -44,12 +44,29 @@ Monopoly.updatePlayersMoney = function(player,amount){
     var playersMoney = parseInt(player.attr("data-money"));
     playersMoney -= amount;
     if (playersMoney < 0 ){
-        Monopoly.playSound('no-money');
-        alert("you are broke!");
+        setTimeout( () => {
+            Monopoly.playSound('no-money');
+            var popup = Monopoly.getPopup("broke");
+            popup.find(".popup-content #text-placeholder").text(`${player.attr('id')} is broke and therefore has been removed from the game`);
+            popup.find(".popup-title").text('Out Of Money');
+            popup.find("button").unbind("click").bind("click", function () {
+                player.remove();
+                $(`.cell[data-owner='${player.attr('id')}']`)
+                .removeData('owner')
+                .removeData('rent')
+                .removeAttr('data-owner')
+                .removeAttr('data-rent')
+                .removeClass(player.attr("id"))
+                .addClass('available');
+                Monopoly.closePopup();
+            });
+            Monopoly.showPopup("broke");
+        }, 0);
+    } else {
+        player.attr("data-money",playersMoney);
+        player.attr("title",player.attr("id") + ": $" + playersMoney);
+        Monopoly.playSound("chaching");
     }
-    player.attr("data-money",playersMoney);
-    player.attr("title",player.attr("id") + ": $" + playersMoney);
-    Monopoly.playSound("chaching");
 };
 
 
@@ -63,6 +80,10 @@ Monopoly.rollDice = function(){
         Monopoly.doubleCounter++;
     }
     var currentPlayer = Monopoly.getCurrentPlayer();
+    while(currentPlayer.length === 0) {
+        Monopoly.setNextPlayerTurn();
+        currentPlayer = Monopoly.getCurrentPlayer();
+    }
     Monopoly.handleAction(currentPlayer,"move",result1 + result2);
 };
 
@@ -86,7 +107,7 @@ Monopoly.movePlayer = function(player,steps){
             }
             steps--;
         }
-    },200);
+    }, 10);
 };
 
 
@@ -117,11 +138,18 @@ Monopoly.setNextPlayerTurn = function(){
     var currentPlayerTurn = Monopoly.getCurrentPlayer();
     var playerId = parseInt(currentPlayerTurn.attr("id").replace("player",""));
     var nextPlayerId = playerId + 1;
-    if (nextPlayerId > $(".player").length){
+    if (nextPlayerId > Monopoly.numOfPlayers){
         nextPlayerId = 1;
     }
     currentPlayerTurn.removeClass("current-turn");
     var nextPlayer = $(".player#player" + nextPlayerId);
+    while(nextPlayer.length === 0) {
+        ++nextPlayerId;
+        if (nextPlayerId > Monopoly.numOfPlayers) {
+            nextPlayerId = 1;
+        }
+        nextPlayer = $(".player#player" + nextPlayerId);
+    }
     nextPlayer.addClass("current-turn");
     if (nextPlayer.is(".jailed")){
         var currentJailTime = parseInt(nextPlayer.attr("data-jail-time"));
@@ -162,8 +190,8 @@ Monopoly.handlePayRent = function(player,propertyCell){
     popup.find("#amount-placeholder").text(currentRent);
     popup.find("button").unbind("click").bind("click",function(){
         var properyOwner = $(".player#"+ properyOwnerId);
+        Monopoly.updatePlayersMoney(properyOwner, -1 * currentRent);
         Monopoly.updatePlayersMoney(player,currentRent);
-        Monopoly.updatePlayersMoney(properyOwner,-1*currentRent);
         Monopoly.closeAndNextTurn();
     });
    Monopoly.showPopup("pay");
@@ -248,8 +276,8 @@ Monopoly.calculateProperyRent = function(propertyCost){
 
 
 Monopoly.closeAndNextTurn = function(){
-    Monopoly.setNextPlayerTurn();
     Monopoly.closePopup();
+    Monopoly.setNextPlayerTurn();
 };
 //adding event listener on the first pop up and validating the number of players
 Monopoly.initPopups = function(){
@@ -293,9 +321,6 @@ Monopoly.handleAction = function(player,action,amount){
             Monopoly.setNextPlayerTurn();
             break;
         case "jail":
-            if(Number.isInteger(amount)) {
-                Monopoly.updatePlayersMoney(player, amount);
-            }
             Monopoly.sendToJail(player);
             break;
     };
@@ -308,6 +333,7 @@ Monopoly.handleAction = function(player,action,amount){
 //creating the players and putting them in the go tile position - if input is float, the fractional part is dismissed
 Monopoly.createPlayers = function(numOfPlayers){
     var startCell = $(".go");
+    Monopoly.numOfPlayers = Number.parseInt(numOfPlayers);
     for (var i=1; i<= Number.parseInt(numOfPlayers); i++){
         var player = $("<div />").addClass("player shadowed").attr("id","player" + i).attr("title","player" + i + ": $" + Monopoly.moneyAtStart);
         startCell.find(".content").append(player);
@@ -320,7 +346,7 @@ Monopoly.createPlayers = function(numOfPlayers){
 
 //getting the next cell id and returning it
 Monopoly.getNextCell = function(cell){
-    var currentCellId = parseInt(cell.attr("id").replace("cell",""));
+    currentCellId = parseInt(cell.attr("id").replace("cell",""));
     var nextCellId = currentCellId + 1
     if (nextCellId > 40){
         Monopoly.handlePassedGo();
